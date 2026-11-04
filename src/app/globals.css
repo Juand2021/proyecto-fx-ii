@@ -1,26 +1,158 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --agua: #16c6d4;
+  --agua-claro: #7eeef5;
+  --agua-osc: #0a8fa3;
+  --lima: #c4f135;
+  --rosa: #ff4f8b;
+  --sol: #ffd23f;
+  --naranja: #ff7a00;
+  --rojo: #e8262c;
+  --azul: #1d5fd1;
+  --selva: #0b3d2e;
+  --selva-2: #0f5a3f;
+  --crema: #fff8e7;
+  --tinta: #151515;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-agua: var(--agua);
+  --color-agua-claro: var(--agua-claro);
+  --color-agua-osc: var(--agua-osc);
+  --color-lima: var(--lima);
+  --color-rosa: var(--rosa);
+  --color-sol: var(--sol);
+  --color-naranja: var(--naranja);
+  --color-rojo: var(--rojo);
+  --color-azul: var(--azul);
+  --color-selva: var(--selva);
+  --color-selva-2: var(--selva-2);
+  --color-crema: var(--crema);
+  --color-tinta: var(--tinta);
+  --font-display: var(--font-shrikhand);
+  --font-sans: var(--font-archivo);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--selva);
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--selva);
+  color: var(--crema);
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+/* Texto con contorno grueso y sombra dura (estilo letrero pintado) */
+.letrero {
+  font-family: var(--font-shrikhand);
+  -webkit-text-stroke: 0.06em var(--tinta);
+  paint-order: stroke fill;
+  text-shadow: 0.07em 0.07em 0 var(--tinta);
+}
+
+.sombra-dura {
+  box-shadow: 6px 6px 0 var(--tinta);
+}
+
+/* Reflejos de piscina: dos capas que se desplazan (solo transform) */
+.causticas {
+  position: absolute;
+  inset: -50%;
+  background-image: radial-gradient(ellipse 60px 22px at 50% 50%, #ffffffaa 0 30%, transparent 70%);
+  background-size: 120px 70px;
+  opacity: 0.35;
+  animation: ola 9s linear infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+.causticas.b {
+  background-size: 170px 90px;
+  opacity: 0.22;
+  animation-duration: 13s;
+  animation-direction: reverse;
+}
+@keyframes ola {
+  to {
+    transform: translate3d(120px, 70px, 0);
+  }
+}
+
+/* Cinta que corre infinito */
+.cinta {
+  display: flex;
+  width: max-content;
+  animation: cinta 22s linear infinite;
+  will-change: transform;
+}
+.cinta.reversa {
+  animation-direction: reverse;
+}
+@keyframes cinta {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.girar-lento {
+  animation: girar 40s linear infinite;
+  will-change: transform;
+}
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.flotar {
+  animation: flotar 3.2s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes flotar {
+  50% {
+    transform: translate3d(0, -12px, 0) rotate(8deg);
+  }
+}
+
+.banderin {
+  transform-origin: top center;
+  animation: banderin 2.4s ease-in-out infinite;
+}
+.banderin:nth-child(odd) {
+  animation-delay: -1.2s;
+}
+@keyframes banderin {
+  50% {
+    transform: rotate(9deg);
+  }
+}
+
+.entrar {
+  animation: entrar 0.6s cubic-bezier(0.2, 0.8, 0.2, 1.2) both;
+}
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+  }
 }

@@ -11,7 +11,7 @@ async function exigirAdmin() {
 }
 
 function refrescar() {
-  revalidatePath("/");
+  revalidatePath("/cuentas");
   revalidatePath("/admin");
 }
 

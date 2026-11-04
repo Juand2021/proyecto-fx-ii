@@ -14,7 +14,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
 
   if (!(await esAdmin())) {
     return (
-      <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-4 p-6">
+      <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-4 bg-crema p-6 text-tinta">
         <h1 className="text-2xl font-bold">Zona del admin</h1>
         <p className="text-sm opacity-70">Si no eres Juan, devuélvase, sapo.</p>
         <form action={entrar} className="flex flex-col gap-3">
@@ -39,11 +39,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const confirmaron = personas.filter((p) => p.confirmo).length;
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 p-4">
+    <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 bg-crema p-4 text-tinta">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Panel admin</h1>
         <div className="flex items-center gap-4 text-sm">
-          <Link href="/" className="underline">
+          <Link href="/cuentas" className="underline">
             Ver página
           </Link>
           <form action={salir}>
