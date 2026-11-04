@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { esAdmin } from "@/lib/admin-auth";
 import { listarPersonas, modoDemo } from "@/lib/personas";
 import { agregar, borrar, cambiar, entrar, salir } from "./acciones";
@@ -41,9 +42,14 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 p-4">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Panel admin</h1>
-        <form action={salir}>
-          <button className="text-sm underline">Salir</button>
-        </form>
+        <div className="flex items-center gap-4 text-sm">
+          <Link href="/" className="underline">
+            Ver página
+          </Link>
+          <form action={salir}>
+            <button className="underline">Salir</button>
+          </form>
+        </div>
       </header>
 
       {modoDemo() && (

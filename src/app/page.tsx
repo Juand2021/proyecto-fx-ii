@@ -1,4 +1,5 @@
 // Página pública: versión base con los datos. El diseño final llega en la fase de frontend.
+import Link from "next/link";
 import { listarPersonas } from "@/lib/personas";
 import { VIAJE, formatoPesos } from "@/lib/viaje";
 
@@ -11,9 +12,17 @@ export default async function Home() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 p-4">
-      <header>
-        <h1 className="text-4xl font-black">{VIAJE.titulo}</h1>
-        <p className="text-xl">{VIAJE.subtitulo}</p>
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-black">{VIAJE.titulo}</h1>
+          <p className="text-xl">{VIAJE.subtitulo}</p>
+        </div>
+        <Link
+          href="/admin"
+          className="shrink-0 rounded-full border px-4 py-2 text-sm font-semibold"
+        >
+          Admin
+        </Link>
       </header>
 
       <ul className="text-sm">
