@@ -185,3 +185,28 @@ export function Banderines({ cantidad = 16 }: { cantidad?: number }) {
     </div>
   );
 }
+
+/** Carita con ojos de plata (estilo del sitio: amarilla, contorno grueso, gafas de sol del Hero cambiadas por $). */
+export function CaraPlata({ className = "", style }: P) {
+  return (
+    <svg viewBox="0 0 64 64" className={className} style={style} aria-hidden="true">
+      {/* billetes volando por detrás */}
+      <g stroke="#151515" strokeWidth="2.5" strokeLinejoin="round">
+        <rect x="2" y="10" width="16" height="10" rx="2" fill="#0f8a3c" transform="rotate(-22 10 15)" />
+        <rect x="46" y="8" width="16" height="10" rx="2" fill="#0f8a3c" transform="rotate(18 54 13)" />
+      </g>
+      <circle cx="32" cy="34" r="25" fill="#ffd23f" stroke="#151515" strokeWidth="4" />
+      {/* ojos: signo pesos */}
+      <g fill="none" stroke="#0f8a3c" strokeWidth="3.6" strokeLinecap="round">
+        <path d="M27 24.5c-1.2-1.6-6.8-1.8-6.8 1.4 0 3.4 7 2.2 7 5.6 0 3.2-5.8 3-7.2 1.3" />
+        <path d="M23.6 21.5v15" />
+        <path d="M44 24.5c-1.2-1.6-6.8-1.8-6.8 1.4 0 3.4 7 2.2 7 5.6 0 3.2-5.8 3-7.2 1.3" />
+        <path d="M40.6 21.5v15" />
+      </g>
+      {/* sonrisa con billete en la boca */}
+      <path d="M18 42 Q32 56 46 42" fill="#151515" stroke="#151515" strokeWidth="3" strokeLinejoin="round" />
+      <rect x="24" y="44" width="16" height="7" rx="1.5" fill="#c4f135" stroke="#151515" strokeWidth="2" />
+      <text x="32" y="50" textAnchor="middle" fontSize="6" fontWeight="900" fontFamily="var(--font-archivo)" fill="#151515">$</text>
+    </svg>
+  );
+}

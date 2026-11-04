@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { Countdown } from "@/components/Countdown";
 import { MontanaAtras, MontanaFrente, Palmera, Sol } from "@/components/arte";
 import { gsap, useGSAP } from "@/lib/gsap";
 
@@ -20,6 +21,7 @@ export function Hero() {
         .to(".h-mont-frente", { yPercent: 70, duration: 0.6 }, 0)
         .to(".h-palma-izq", { xPercent: -70, rotate: -18, duration: 0.6 }, 0)
         .to(".h-palma-der", { xPercent: 70, rotate: 18, duration: 0.6 }, 0)
+        .to(".h-cuenta", { yPercent: 60, autoAlpha: 0, duration: 0.25 }, 0)
         .to(".h-baje", { autoAlpha: 0, duration: 0.1 }, 0)
         .fromTo(".h-piscina", { scale: 0 }, { scale: 14, duration: 0.55, ease: "power2.in" }, 0.3)
         .fromTo(".h-alagua", { autoAlpha: 0, scale: 0.5, rotate: -8 }, { autoAlpha: 1, scale: 1, rotate: -3, duration: 0.2 }, 0.8);
@@ -54,11 +56,22 @@ export function Hero() {
         </p>
       </div>
 
-      <p className="h-baje absolute inset-x-0 bottom-[6%] z-10 text-center text-sm font-black uppercase tracking-widest text-crema">
-        Villeta · 14 al 17 de nov
-        <br />
-        <span className="mt-1 inline-block animate-bounce">baje, marica ↓</span>
-      </p>
+      <div className="h-cuenta absolute left-1/2 top-[67%] z-10 w-[min(88vw,22rem)] -translate-x-1/2 rotate-1 rounded-2xl border-[4px] border-tinta bg-crema px-3 pb-2 pt-1.5 text-tinta sombra-dura will-change-transform md:top-[72%]">
+        <p className="text-center text-[10px] font-black uppercase tracking-widest text-rosa">La chiva sale en</p>
+        <Countdown numero="text-3xl text-tinta md:text-4xl" />
+      </div>
+
+      <div className="h-baje absolute inset-x-0 bottom-[4%] z-10 flex flex-col items-center gap-1.5 text-center">
+        <p className="text-xs font-black uppercase tracking-widest text-crema [text-shadow:1px_1px_0_#151515]">
+          Villeta · 14 al 17 de nov
+        </p>
+        <p className="flex animate-bounce items-center gap-2 rounded-full border-[3px] border-tinta bg-tinta/85 px-4 py-1.5 text-sm font-black uppercase tracking-widest text-sol">
+          baje, marica
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 4v15M5 12l7 7 7-7" />
+          </svg>
+        </p>
+      </div>
 
       <div className="h-piscina absolute left-1/2 top-1/2 z-20 -ml-[10vmax] -mt-[10vmax] h-[20vmax] w-[20vmax] overflow-hidden rounded-full bg-agua will-change-transform">
         <div className="causticas" />

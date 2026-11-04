@@ -156,3 +156,24 @@ html.lenis body {
     animation: none !important;
   }
 }
+
+/* Estado activo en la lista de pasajeros */
+.sombra-estado {
+  box-shadow: 2px 2px 0 var(--tinta);
+}
+
+/* Carita de "ya pagó": se balancea suave */
+.bailar {
+  animation: bailar 1.8s ease-in-out infinite;
+  transform-origin: 50% 80%;
+  will-change: transform;
+}
+@keyframes bailar {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(8deg) scale(1.06);
+  }
+}

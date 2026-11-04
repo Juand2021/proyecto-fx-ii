@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { esAdmin } from "@/lib/admin-auth";
+import { APAGADO, COLOR, type Accion, debe, va } from "@/lib/estado";
 import { listarPersonas, modoDemo } from "@/lib/personas";
-import { COLOR, ESTADOS, estadoDe } from "@/lib/estado";
 import { agregar, borrar, entrar, marcar, salir } from "./acciones";
 
 export const metadata: Metadata = {
@@ -10,13 +10,19 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
+const VOLVER =
+  "inline-flex items-center gap-1.5 rounded-full border-[3px] border-tinta bg-crema px-4 py-2 text-sm font-black sombra-dura transition-transform active:translate-x-0.5 active:translate-y-0.5";
+
 export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const { error } = await searchParams;
 
   if (!(await esAdmin())) {
     return (
       <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-4 bg-crema p-6 text-tinta">
-        <h1 className="text-2xl font-bold">Zona del admin</h1>
+        <Link href="/cuentas" className={`${VOLVER} self-start`}>
+          ← Volver a Las cuentas
+        </Link>
+        <h1 className="mt-4 text-2xl font-bold">Zona del admin</h1>
         <p className="text-sm opacity-70">Si no eres Juan, devuélvase, sapo.</p>
         <form action={entrar} className="flex flex-col gap-3">
           <input
@@ -36,21 +42,20 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   }
 
   const personas = await listarPersonas();
-  const cuenta = (e: string) => personas.filter((p) => estadoDe(p) === e).length;
+  const van = personas.filter(va).length;
+  const deben = personas.filter(debe).length;
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 bg-crema p-4 text-tinta">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Panel admin</h1>
-        <div className="flex items-center gap-4 text-sm">
-          <Link href="/cuentas" className="underline">
-            Ver página
-          </Link>
-          <form action={salir}>
-            <button className="underline">Salir</button>
-          </form>
-        </div>
+    <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-5 bg-crema p-4 pb-16 text-tinta">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/cuentas" className={VOLVER}>
+          ← Volver a Las cuentas
+        </Link>
+        <form action={salir}>
+          <button className={`${VOLVER} bg-rojo text-crema`}>Cerrar sesión</button>
+        </form>
       </header>
+      <h1 className="text-2xl font-bold">Panel admin</h1>
 
       {modoDemo() && (
         <p className="rounded-lg bg-amber-100 p-3 text-sm text-amber-900">
@@ -59,7 +64,10 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       )}
 
       <p className="text-sm">
-        {personas.length} personas · {cuenta("va")} van · {cuenta("debe")} deben · {cuenta("no")} no van
+        {personas.length} personas · {van} van · {personas.length - van} no van · {deben} deben
+      </p>
+      <p className="-mt-3 text-xs opacity-70">
+        VA / NO VA es la asistencia. DEBE se prende o apaga aparte: tóquelo cuando alguien le pague el cupo a Perdomo.
       </p>
 
       <form action={agregar} className="flex gap-2">
@@ -68,37 +76,40 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       </form>
 
       <ul className="flex flex-col divide-y rounded-lg border">
-        {personas.map((p) => {
-          const actual = estadoDe(p);
-          return (
-            <li key={p.id} className="flex flex-wrap items-center gap-2 p-3">
-              <span className="min-w-0 flex-1 font-medium">{p.nombre}</span>
-              <div className="flex gap-1.5">
-                {ESTADOS.map((e) => (
-                  <form key={e.id} action={marcar}>
-                    <input type="hidden" name="id" value={p.id} />
-                    <input type="hidden" name="estado" value={e.id} />
-                    <button
-                      aria-pressed={actual === e.id}
-                      className={`rounded-full border-[3px] px-3 py-1 text-xs font-black transition-transform active:scale-95 ${
-                        actual === e.id ? `border-tinta ${COLOR[e.id]}` : "border-tinta/25 bg-transparent text-tinta/60"
-                      }`}
-                    >
-                      {e.etiqueta}
-                    </button>
-                  </form>
-                ))}
-              </div>
-              <form action={borrar}>
-                <input type="hidden" name="id" value={p.id} />
-                <button className="px-2 text-sm text-red-600" aria-label={`Eliminar a ${p.nombre}`}>
-                  ✕
-                </button>
-              </form>
-            </li>
-          );
-        })}
+        {personas.map((p) => (
+          <li key={p.id} className="flex flex-wrap items-center gap-2 p-3">
+            <span className="min-w-0 flex-1 font-medium">{p.nombre}</span>
+            <div className="flex gap-1.5">
+              <Boton id={p.id} accion="va" activo={va(p)} color={COLOR.va} texto="VA" />
+              <Boton id={p.id} accion="no" activo={!va(p)} color={COLOR.no} texto="NO VA" />
+              <Boton id={p.id} accion={debe(p) ? "pagado" : "debe"} activo={debe(p)} color={COLOR.debe} texto="DEBE" />
+            </div>
+            <form action={borrar}>
+              <input type="hidden" name="id" value={p.id} />
+              <button className="px-2 text-sm text-red-600" aria-label={`Eliminar a ${p.nombre}`}>
+                ✕
+              </button>
+            </form>
+          </li>
+        ))}
       </ul>
     </main>
+  );
+}
+
+function Boton({ id, accion, activo, color, texto }: { id: string; accion: Accion; activo: boolean; color: string; texto: string }) {
+  return (
+    <form action={marcar}>
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="accion" value={accion} />
+      <button
+        aria-pressed={activo}
+        className={`rounded-full border-[3px] px-3 py-1 text-xs font-black transition-transform active:scale-95 ${
+          activo ? `border-tinta ${color}` : `bg-transparent ${APAGADO}`
+        }`}
+      >
+        {texto}
+      </button>
+    </form>
   );
 }

@@ -21,12 +21,17 @@ const demo: Persona[] = [
   { id: "demo-4", nombre: "El fantasma del grupo", confirmo: false, pagoCupo: false, orden: 4 },
 ];
 
+// La lista siempre sale en orden alfabético (ignora tildes y mayúsculas).
+function porNombre(a: Persona, b: Persona): number {
+  return a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base" });
+}
+
 export function modoDemo(): boolean {
   return !firebaseConfigurado();
 }
 
 export async function listarPersonas(): Promise<Persona[]> {
-  if (modoDemo()) return [...demo].sort((a, b) => a.orden - b.orden);
+  if (modoDemo()) return [...demo].sort(porNombre);
   // Sin orderBy en la consulta: así también salen los documentos creados a mano
   // en la consola de Firebase aunque les falte algún campo.
   const snap = await getDb().collection(COLECCION).get();
@@ -41,18 +46,19 @@ export async function listarPersonas(): Promise<Persona[]> {
         orden: typeof x.orden === "number" ? x.orden : Number.MAX_SAFE_INTEGER,
       };
     })
-    .sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre, "es"));
+    .sort(porNombre);
 }
 
 export async function crearPersona(nombre: string): Promise<void> {
   const limpio = nombre.trim().slice(0, 60);
   if (!limpio) return;
   const orden = Date.now();
+  // Por defecto: VA (confirmo) y DEBE (sin pagar el cupo)
   if (modoDemo()) {
-    demo.push({ id: `demo-${orden}`, nombre: limpio, confirmo: false, pagoCupo: false, orden });
+    demo.push({ id: `demo-${orden}`, nombre: limpio, confirmo: true, pagoCupo: false, orden });
     return;
   }
-  await getDb().collection(COLECCION).add({ nombre: limpio, confirmo: false, pagoCupo: false, orden });
+  await getDb().collection(COLECCION).add({ nombre: limpio, confirmo: true, pagoCupo: false, orden });
 }
 
 export async function actualizarPersona(id: string, cambios: CambiosPersona): Promise<void> {

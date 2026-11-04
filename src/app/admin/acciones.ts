@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { COOKIE_ADMIN, esAdmin, pinCorrecto, tokenAdmin } from "@/lib/admin-auth";
-import { camposDe, esEstado } from "@/lib/estado";
+import { camposDe, esAccion } from "@/lib/estado";
 import { actualizarPersona, crearPersona, eliminarPersona } from "@/lib/personas";
 
 async function exigirAdmin() {
@@ -31,7 +31,7 @@ export async function entrar(formData: FormData) {
 
 export async function salir() {
   (await cookies()).delete(COOKIE_ADMIN);
-  redirect("/admin");
+  redirect("/cuentas");
 }
 
 export async function agregar(formData: FormData) {
@@ -43,9 +43,9 @@ export async function agregar(formData: FormData) {
 export async function marcar(formData: FormData) {
   await exigirAdmin();
   const id = String(formData.get("id"));
-  const estado = formData.get("estado");
-  if (!esEstado(estado)) return;
-  await actualizarPersona(id, camposDe(estado));
+  const accion = formData.get("accion");
+  if (!esAccion(accion)) return;
+  await actualizarPersona(id, camposDe(accion));
   refrescar();
 }
 
