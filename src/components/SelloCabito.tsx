@@ -3,12 +3,12 @@ import Image from "next/image";
 
 // Posición de los ojos en la imagen recortada (sale de scripts/procesar-cabito.py)
 const OJOS = { izq: [40.0, 38.21], der: [65.88, 35.77] } as const;
-const CENTRO_X = (OJOS.izq[0] + OJOS.der[0]) / 2;
-const CENTRO_Y = (OJOS.izq[1] + OJOS.der[1]) / 2;
+export const CENTRO_X = (OJOS.izq[0] + OJOS.der[0]) / 2;
+export const CENTRO_Y = (OJOS.izq[1] + OJOS.der[1]) / 2;
 // la línea de los ojos está un poco inclinada
-const GIRO = (Math.atan2((OJOS.der[1] - OJOS.izq[1]) * 369, (OJOS.der[0] - OJOS.izq[0]) * 510) * 180) / Math.PI;
+export const GIRO = (Math.atan2((OJOS.der[1] - OJOS.izq[1]) * 369, (OJOS.der[0] - OJOS.izq[0]) * 510) * 180) / Math.PI;
 
-function Gafas({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
+export function Gafas({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg viewBox="0 0 120 40" className={className} style={style} aria-hidden="true">
       <path d="M2 8 H118" stroke="#151515" strokeWidth="5" strokeLinecap="round" />
