@@ -68,11 +68,13 @@ export function Inventario() {
         0,
       ).fromTo(".i-titulo", { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.12 }, 0);
       gsap.utils.toArray<HTMLElement>(".i-carta").forEach((c, i) => {
-        tl.fromTo(
+        const t = 0.18 + i * 0.16;
+        // Opaca desde el primer cuadro para que no se transparente la carta de abajo
+        tl.set(c, { autoAlpha: 1 }, t).fromTo(
           c,
-          { rotateY: -100, yPercent: 60, autoAlpha: 0, rotate: 0 },
-          { rotateY: 0, yPercent: 0, autoAlpha: 1, rotate: i % 2 ? 4 : -4, duration: 0.14, ease: "power2.out" },
-          0.18 + i * 0.16,
+          { rotateY: -100, yPercent: 60, rotate: 0 },
+          { rotateY: 0, yPercent: 0, rotate: i % 2 ? 4 : -4, duration: 0.14, ease: "power2.out", immediateRender: false },
+          t,
         );
       });
     },
