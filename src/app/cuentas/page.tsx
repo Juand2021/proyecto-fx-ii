@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Banderines } from "@/components/arte";
 import { Countdown } from "@/components/Countdown";
+import { COLOR, ESTADOS, type Estado, estadoDe } from "@/lib/estado";
 import { listarPersonas } from "@/lib/personas";
 import { VIAJE, formatoPesos } from "@/lib/viaje";
 
@@ -11,24 +12,25 @@ export const metadata: Metadata = { title: "Las cuentas · Proyecto F(x) II" };
 // o en máximo 1 min si se edita directo en la consola de Firebase.
 export const revalidate = 60;
 
-function Etiqueta({ ok, si, no }: { ok: boolean; si: string; no: string }) {
+const ETIQUETA = Object.fromEntries(ESTADOS.map((e) => [e.id, e.etiqueta])) as Record<Estado, string>;
+
+function Etiqueta({ estado }: { estado: Estado }) {
   return (
     <b
-      className={`inline-block min-w-[62px] rounded-md border-[3px] border-tinta px-2 py-1 text-center text-[11px] font-black ${
-        ok ? "bg-[#0f8a3c] text-crema" : "bg-rojo text-crema"
-      }`}
+      className={`inline-block min-w-[74px] rounded-md border-[3px] border-tinta px-2 py-1 text-center text-xs font-black ${COLOR[estado]}`}
     >
-      {ok ? si : no}
+      {ETIQUETA[estado]}
     </b>
   );
 }
 
 export default async function Cuentas() {
   const personas = await listarPersonas();
-  const van = personas.filter((p) => p.confirmo).length;
-  const pagaron = personas.filter((p) => p.pagoCupo).length;
-  const recogido = pagaron * VIAJE.cupo;
-  const deben = personas.filter((p) => p.confirmo && !p.pagoCupo).length;
+  const cuenta = (e: Estado) => personas.filter((p) => estadoDe(p) === e).length;
+  const van = cuenta("va");
+  const deben = cuenta("debe");
+  const noVan = cuenta("no");
+  const recogido = van * VIAJE.cupo;
 
   return (
     <main
@@ -66,11 +68,11 @@ export default async function Cuentas() {
         {/* números */}
         <div className="entrar mt-8 grid grid-cols-3 gap-2" style={{ animationDelay: "80ms" }}>
           {[
-            { n: `${van}`, l: "van", bg: "bg-lima" },
-            { n: `${pagaron}`, l: "pagaron cupo", bg: "bg-agua-claro" },
-            { n: `${deben}`, l: "dicen que sí y no pagan", bg: "bg-rosa" },
+            { n: van, l: "van (ya pagaron)", c: COLOR.va },
+            { n: deben, l: "deben, sapos", c: COLOR.debe },
+            { n: noVan, l: "no van, cobardes", c: COLOR.no },
           ].map((s) => (
-            <div key={s.l} className={`rounded-2xl border-[4px] border-tinta p-3 text-center sombra-dura ${s.bg}`}>
+            <div key={s.l} className={`rounded-2xl border-[4px] border-tinta p-3 text-center sombra-dura ${s.c}`}>
               <p className="font-display text-4xl leading-none">{s.n}</p>
               <p className="mt-1 text-[11px] font-black uppercase leading-tight">{s.l}</p>
             </div>
@@ -80,7 +82,7 @@ export default async function Cuentas() {
         <Caja tag="PLATA EN EL BOLSILLO DE PERDOMO" delay={140}>
           <p className="font-display text-5xl tabular-nums text-[#0f8a3c]">{formatoPesos(recogido)}</p>
           <p className="mt-1 text-sm font-bold">
-            {pagaron} de {personas.length} han soltado los {formatoPesos(VIAJE.cupo)} del cupo.
+            {van} de {van + deben} han soltado los {formatoPesos(VIAJE.cupo)} del cupo.
           </p>
         </Caja>
 
@@ -96,8 +98,7 @@ export default async function Cuentas() {
                   style={{ animationDelay: `${260 + i * 50}ms` }}
                 >
                   <span className="flex-1 text-lg font-bold leading-tight">{p.nombre}</span>
-                  <Etiqueta ok={p.confirmo} si="VA" no="NO VA" />
-                  <Etiqueta ok={p.pagoCupo} si="PAGÓ" no="DEBE" />
+                  <Etiqueta estado={estadoDe(p)} />
                 </li>
               ))}
             </ul>

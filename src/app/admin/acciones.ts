@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { COOKIE_ADMIN, esAdmin, pinCorrecto, tokenAdmin } from "@/lib/admin-auth";
+import { camposDe, esEstado } from "@/lib/estado";
 import { actualizarPersona, crearPersona, eliminarPersona } from "@/lib/personas";
 
 async function exigirAdmin() {
@@ -39,13 +40,12 @@ export async function agregar(formData: FormData) {
   refrescar();
 }
 
-export async function cambiar(formData: FormData) {
+export async function marcar(formData: FormData) {
   await exigirAdmin();
   const id = String(formData.get("id"));
-  const campo = String(formData.get("campo"));
-  const valor = formData.get("valor") === "true";
-  if (campo !== "confirmo" && campo !== "pagoCupo") return;
-  await actualizarPersona(id, { [campo]: valor });
+  const estado = formData.get("estado");
+  if (!esEstado(estado)) return;
+  await actualizarPersona(id, camposDe(estado));
   refrescar();
 }
 

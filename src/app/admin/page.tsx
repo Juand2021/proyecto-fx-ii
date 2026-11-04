@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { esAdmin } from "@/lib/admin-auth";
 import { listarPersonas, modoDemo } from "@/lib/personas";
-import { agregar, borrar, cambiar, entrar, salir } from "./acciones";
+import { COLOR, ESTADOS, estadoDe } from "@/lib/estado";
+import { agregar, borrar, entrar, marcar, salir } from "./acciones";
 
 export const metadata: Metadata = {
   title: "Admin · Proyecto F(x) II",
@@ -35,8 +36,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   }
 
   const personas = await listarPersonas();
-  const pagaron = personas.filter((p) => p.pagoCupo).length;
-  const confirmaron = personas.filter((p) => p.confirmo).length;
+  const cuenta = (e: string) => personas.filter((p) => estadoDe(p) === e).length;
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 bg-crema p-4 text-tinta">
@@ -59,7 +59,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       )}
 
       <p className="text-sm">
-        {personas.length} personas · {confirmaron} confirmaron · {pagaron} pagaron el cupo
+        {personas.length} personas · {cuenta("va")} van · {cuenta("debe")} deben · {cuenta("no")} no van
       </p>
 
       <form action={agregar} className="flex gap-2">
@@ -68,35 +68,37 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       </form>
 
       <ul className="flex flex-col divide-y rounded-lg border">
-        {personas.map((p) => (
-          <li key={p.id} className="flex flex-wrap items-center gap-2 p-3">
-            <span className="flex-1 font-medium">{p.nombre}</span>
-            <Toggle id={p.id} campo="confirmo" activo={p.confirmo} etiqueta="Confirmó" />
-            <Toggle id={p.id} campo="pagoCupo" activo={p.pagoCupo} etiqueta="Pagó cupo" />
-            <form action={borrar}>
-              <input type="hidden" name="id" value={p.id} />
-              <button className="px-2 text-sm text-red-600" aria-label={`Eliminar a ${p.nombre}`}>
-                ✕
-              </button>
-            </form>
-          </li>
-        ))}
+        {personas.map((p) => {
+          const actual = estadoDe(p);
+          return (
+            <li key={p.id} className="flex flex-wrap items-center gap-2 p-3">
+              <span className="min-w-0 flex-1 font-medium">{p.nombre}</span>
+              <div className="flex gap-1.5">
+                {ESTADOS.map((e) => (
+                  <form key={e.id} action={marcar}>
+                    <input type="hidden" name="id" value={p.id} />
+                    <input type="hidden" name="estado" value={e.id} />
+                    <button
+                      aria-pressed={actual === e.id}
+                      className={`rounded-full border-[3px] px-3 py-1 text-xs font-black transition-transform active:scale-95 ${
+                        actual === e.id ? `border-tinta ${COLOR[e.id]}` : "border-tinta/25 bg-transparent text-tinta/60"
+                      }`}
+                    >
+                      {e.etiqueta}
+                    </button>
+                  </form>
+                ))}
+              </div>
+              <form action={borrar}>
+                <input type="hidden" name="id" value={p.id} />
+                <button className="px-2 text-sm text-red-600" aria-label={`Eliminar a ${p.nombre}`}>
+                  ✕
+                </button>
+              </form>
+            </li>
+          );
+        })}
       </ul>
     </main>
-  );
-}
-
-function Toggle({ id, campo, activo, etiqueta }: { id: string; campo: string; activo: boolean; etiqueta: string }) {
-  return (
-    <form action={cambiar}>
-      <input type="hidden" name="id" value={id} />
-      <input type="hidden" name="campo" value={campo} />
-      <input type="hidden" name="valor" value={String(!activo)} />
-      <button
-        className={`rounded-full px-3 py-1 text-sm font-semibold ${activo ? "bg-emerald-600 text-white" : "bg-red-100 text-red-700"}`}
-      >
-        {activo ? "✓" : "✗"} {etiqueta}
-      </button>
-    </form>
   );
 }
