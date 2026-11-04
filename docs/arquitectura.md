@@ -24,7 +24,7 @@ Colección `personas` en Firestore:
 Los datos fijos del viaje (fechas, costos, destino) están en `src/lib/viaje.ts`.
 
 ## Rendimiento
-- La página `/` es estática (se genera una vez) y se regenera al instante cuando el admin cambia algo (`revalidatePath`), o cada 5 min como respaldo. Así carga rapidísimo y casi no gasta lecturas de Firestore.
+- La página `/` es estática (se genera una vez) y se regenera al instante cuando el admin cambia algo (`revalidatePath`), o en máximo 1 min si se edita directo en la consola de Firebase. Así carga rapidísimo y casi no gasta lecturas de Firestore.
 - Firestore nunca se expone al navegador: no hay reglas que configurar ni llaves públicas.
 
 ## Seguridad del admin

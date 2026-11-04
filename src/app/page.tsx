@@ -2,8 +2,9 @@
 import { listarPersonas } from "@/lib/personas";
 import { VIAJE, formatoPesos } from "@/lib/viaje";
 
-// Se regenera cada 5 min, o al instante cuando el admin cambia algo.
-export const revalidate = 300;
+// Se regenera al instante cuando el admin cambia algo en /admin,
+// o en máximo 1 min si se edita directo en la consola de Firebase.
+export const revalidate = 60;
 
 export default async function Home() {
   const personas = await listarPersonas();

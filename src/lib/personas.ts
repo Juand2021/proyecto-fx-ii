@@ -27,8 +27,21 @@ export function modoDemo(): boolean {
 
 export async function listarPersonas(): Promise<Persona[]> {
   if (modoDemo()) return [...demo].sort((a, b) => a.orden - b.orden);
-  const snap = await getDb().collection(COLECCION).orderBy("orden").get();
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Persona, "id">) }));
+  // Sin orderBy en la consulta: así también salen los documentos creados a mano
+  // en la consola de Firebase aunque les falte algún campo.
+  const snap = await getDb().collection(COLECCION).get();
+  return snap.docs
+    .map((d) => {
+      const x = d.data();
+      return {
+        id: d.id,
+        nombre: String(x.nombre ?? d.id),
+        confirmo: x.confirmo === true,
+        pagoCupo: x.pagoCupo === true,
+        orden: typeof x.orden === "number" ? x.orden : Number.MAX_SAFE_INTEGER,
+      };
+    })
+    .sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre, "es"));
 }
 
 export async function crearPersona(nombre: string): Promise<void> {
