@@ -3,7 +3,8 @@
 Web app del paseo a Villeta (14 al 17 de noviembre de 2026).
 
 - `/`: info del viaje y quién confirmó y pagó el cupo (público, sin login)
-- `/admin`: panel del administrador (PIN)
+- `/admin`: panel de los administradores (PIN): asistencia, cupos, ingresos y gastos
+- Los ingresos y gastos se guardan en un Google Sheet público de solo lectura: [docs/control-gastos.md](docs/control-gastos.md)
 
 ## Desarrollo
 
