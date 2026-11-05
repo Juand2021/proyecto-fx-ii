@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Banderines, CaraPlata } from "@/components/arte";
 import { Countdown } from "@/components/Countdown";
+import { AbonosPersona } from "@/components/cuentas/AbonosPersona";
+import { ListaGastos } from "@/components/cuentas/ListaGastos";
+import { ResumenFinanzas } from "@/components/cuentas/ResumenFinanzas";
 import { APAGADO, COLOR, debe, va } from "@/lib/estado";
+import type { Cuentas as CuentasDatos } from "@/lib/finanzas";
+import { obtenerCuentas } from "@/lib/movimientos";
 import { listarPersonas } from "@/lib/personas";
 import { VIAJE, formatoPesos } from "@/lib/viaje";
 
@@ -55,7 +60,16 @@ export default async function Cuentas() {
   const noVan = personas.length - van;
   const deben = personas.filter(debe).length;
   const pagaron = personas.length - deben;
-  const recogido = pagaron * VIAJE.cupo;
+
+  let cuentas: CuentasDatos | null = null;
+  let errorCuentas = false;
+
+  try {
+    cuentas = await obtenerCuentas();
+  } catch (error) {
+    console.error("Error al obtener cuentas:", error);
+    errorCuentas = true;
+  }
 
   return (
     <main
@@ -109,7 +123,10 @@ export default async function Cuentas() {
         </div>
 
         <Caja tag="PLATA EN EL BOLSILLO DE PERDOMO" delay={140}>
-          <p className="font-display text-5xl tabular-nums text-[#0f8a3c]">{formatoPesos(recogido)}</p>
+          {/* Sale del Sheet (cupos + abonos), el mismo total del Resumen del Excel. */}
+          <p className="font-display text-5xl tabular-nums text-[#0f8a3c]">
+            {cuentas ? formatoPesos(cuentas.totalIngresos) : "—"}
+          </p>
           <p className="mt-1 text-sm font-bold">
             {pagaron} de {personas.length} han soltado los {formatoPesos(VIAJE.cupo)} del cupo.
           </p>
@@ -137,11 +154,43 @@ export default async function Cuentas() {
           )}
         </Caja>
 
-        <Caja tag="LA CHIVA SALE EN" delay={260}>
+        {/* Control de gastos: Resumen, Abonos por persona y Lista de gastos */}
+        {errorCuentas || !cuentas ? (
+          <Caja tag="CONTROL DE GASTOS" delay={220}>
+            <div className="rounded-xl border-[3px] border-tinta bg-sol/20 p-4 text-center">
+              <p className="text-sm font-bold text-rojo">
+                No se pudieron cargar los movimientos de las cuentas en este momento.
+              </p>
+              <p className="mt-1 text-xs font-semibold text-tinta/70">
+                El resto de la página sigue funcionando con normalidad. Intenta recargar en un momento.
+              </p>
+            </div>
+          </Caja>
+        ) : (
+          <>
+            <Caja tag="CONTROL DE GASTOS" delay={220}>
+              <ResumenFinanzas
+                totalIngresos={cuentas.totalIngresos}
+                totalGastos={cuentas.totalGastos}
+                saldo={cuentas.saldo}
+              />
+            </Caja>
+
+            <Caja tag={`ABONOS A LA META (${formatoPesos(VIAJE.costoTotal)})`} delay={240}>
+              <AbonosPersona porPersona={cuentas.porPersona} />
+            </Caja>
+
+            <Caja tag="GASTOS REGISTRADOS" delay={260}>
+              <ListaGastos gastos={cuentas.gastos} />
+            </Caja>
+          </>
+        )}
+
+        <Caja tag="LA CHIVA SALE EN" delay={280}>
           <Countdown numero="text-4xl text-[#0f8a3c]" />
         </Caja>
 
-        <Caja tag="SU TIQUETE, PAPI" delay={320}>
+        <Caja tag="SU TIQUETE, PAPI" delay={300}>
           <div className="grid grid-cols-2 rounded-xl border-[3px] border-dashed border-tinta">
             {[
               ["DESTINO", "Finca en Villeta"],

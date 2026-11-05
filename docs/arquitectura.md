@@ -10,7 +10,8 @@
 |---|---|---|
 | `/` | Todos, sin login | Home: historia con animaciones atadas al scroll (GSAP + ScrollTrigger + Lenis), contenido fijo |
 | `/cuentas` | Todos, sin login | Quién va, quién pagó el cupo, plata recogida, cuenta regresiva y botón Admin |
-| `/admin` | Solo Juan (PIN) | Agregar/quitar personas, marcar ✓/✗ en "Confirmó" y "Pagó cupo" |
+| `/admin` | Solo los dos admins (PIN compartido) | Agregar/quitar personas, marcar ✓/✗ en "Confirmó" y "Pagó cupo", registrar ingresos y gastos |
+| `/evidencia/[id]` | Todos, sin login | Sirve la foto de evidencia de un gasto (el link que queda en el Sheet) |
 
 ## Datos
 Colección `personas` en Firestore:
@@ -21,6 +22,10 @@ Colección `personas` en Firestore:
 | `confirmo` | boolean | lo marca el admin |
 | `pagoCupo` | boolean | los $50.000 del cupo |
 | `orden` | number | orden en la tabla |
+
+Colección `evidencias`: la foto comprimida de cada gasto (`mime`, `datos`, `creada`).
+
+Los ingresos y gastos no están en Firestore sino en un Google Sheet; ver [control-gastos.md](control-gastos.md).
 
 Los datos fijos del viaje (fechas, costos, destino) están en `src/lib/viaje.ts`.
 
@@ -33,4 +38,4 @@ Los datos fijos del viaje (fechas, costos, destino) están en `src/lib/viaje.ts`
 - Al entrar se guarda una cookie httpOnly con un HMAC del PIN. Cada acción del admin la verifica en el servidor.
 
 ## Variables de entorno
-Ver `.env.example`. Sin `FIREBASE_SERVICE_ACCOUNT` la app funciona en "modo prueba" con datos en memoria.
+`ADMIN_PIN`, `FIREBASE_SERVICE_ACCOUNT`, `GOOGLE_SHEET_ID` y, opcional, `SITE_URL`; ver [control-gastos.md](control-gastos.md). Sin `FIREBASE_SERVICE_ACCOUNT` la app funciona en "modo prueba" con datos en memoria, y sin `GOOGLE_SHEET_ID` los movimientos también.
