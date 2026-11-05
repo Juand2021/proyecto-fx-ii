@@ -26,7 +26,7 @@ Rutas: `CC` = Claude Code (inline), `AG` = Antigravity (unidad paralela, superfi
 | T3 | S3 | CC | `src/lib/evidencia.ts`, `src/lib/firebase.ts` | pendiente | — |
 | T4 | S2 S3 S4 S6 S7 | CC | `src/app/admin/**` | pendiente | — |
 | T5 | S2 S5 S7 | AG | `src/app/cuentas/**`, `src/components/cuentas/**` | pendiente | — |
-| T6 | S1 S5 S8 | CC | `scripts/preparar-sheet.mjs`, `docs/control-gastos.md`, `docs/arquitectura.md`, `README.md` | pendiente | — |
+| T6 | S1 S5 S8 | CC | `scripts/preparar-sheet.mjs`, `package.json` (script `sheet:preparar`), `docs/control-gastos.md`, `docs/arquitectura.md`, `README.md` | script hecho y verificado en vivo (pestañas creadas; con filas de prueba el Resumen dio recaudado 300.000, gastado 120.000, saldo 180.000, Catalina completa, filas de prueba borradas); docs pendientes | `feat: script para preparar pestañas y fórmulas del Sheet` |
 
 Orden: T1 primero (es el contrato). Luego T2, T3, T4 y T6 en Claude Code y T5 en Antigravity, en paralelo. T4 depende de T2 y T3; T5 solo del contrato de T1 y trabaja con datos demo.
 
@@ -42,4 +42,6 @@ Contrato de T1 (lo que T5 consume): `obtenerCuentas()` devuelve `{ ingresos, gas
 - L6 (2026-11-05): "para ingresos no es necesario poner evidencia, es lo unico que se cambiaria"
 - L7 (2026-11-05): "Podemos empezar a implementarlo. recuerda que vamos a trabajr con gentle ai y vamos a distribuir este proyecto con antigravity y claude code, entonces vas a irme guiando que es lo que tengo que hacer e irme explicando de manera correcta. Adicionalmente este es un repositorio de git, podemos ir haciendo commits. estructuremos eso y ahi si empezamos"
 - 2026-11-05: Revisión nativa, commits T0+T1 (base `ba51129`): `assess` dio riesgo medio, 171 líneas, `review_due: false` (`under_budget`). No se inició revisión; la rebanada sigue abierta hasta llegar al presupuesto (~400 líneas) o a una unidad de riesgo alto. Risk de T1: none (archivos nuevos que nadie consume todavía).
+- 2026-11-05: Revisión nativa de T0–T2 (lineage `review-6829b7d9dd7a85e5`, lentes risk y reliability, item 2 escalado): el usuario aceptó revisar, pero las capturas fallaron con "Not logged in" del CLI `claude` (entorno, no del código). El usuario decidió seguir sin revisar; la revisión queda abierta sin cerrar.
+- 2026-11-05: Hallazgo para T3: el proyecto `proyecto-fx-ii` no tiene ningún bucket de Storage (listado vacío). Crearlo en Firebase probablemente exige plan Blaze (sin verificar); decisión pendiente del usuario (Storage vs. foto comprimida en Firestore).
 - 2026-11-05: Decisiones mías, a redirigir si no gustan: Firebase Storage para las fotos (Drive no deja subir con cuenta de servicio en cuentas personales; sin verificar); reutilizar la cuenta de servicio actual para Sheets; un solo PIN para los dos admins; commits en Conventional Commits sin atribución.
