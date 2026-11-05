@@ -22,7 +22,7 @@ Rutas: `CC` = Claude Code (inline), `AG` = Antigravity (unidad paralela, superfi
 |---|---|---|---|---|---|
 | T0 | — | CC | `odd/tasks/control-gastos.md` | hecha | `docs: plan de control de gastos` |
 | T1 | S3 S4 S5 | CC | `src/lib/movimientos.ts`, `src/lib/finanzas.ts` | hecha (lint OK, cálculos verificados con script; `tsc` solo da 2 errores previos de `PageProps`/`LayoutProps`, que Next genera al correr dev/build) | `feat: contrato y cálculos del control de gastos` |
-| T2 | S1 S8 | CC | `src/lib/sheets.ts`, `package.json`, `.env.example` | pendiente | — |
+| T2 | S1 S8 | CC | `src/lib/sheets.ts`, `src/lib/movimientos.ts`, `src/lib/firebase.ts` (solo exportar `cargarCredenciales`), `package.json` | código listo (lint OK, `tsc` sin errores nuevos); falta la prueba en vivo, que necesita las credenciales locales y las pestañas de T6. `.env.example` bloqueado por permisos: las variables se documentan en T6 | `feat: conectar el control de gastos con Google Sheets` |
 | T3 | S3 | CC | `src/lib/evidencia.ts`, `src/lib/firebase.ts` | pendiente | — |
 | T4 | S2 S3 S4 S6 S7 | CC | `src/app/admin/**` | pendiente | — |
 | T5 | S2 S5 S7 | AG | `src/app/cuentas/**`, `src/components/cuentas/**` | pendiente | — |
@@ -41,4 +41,5 @@ Contrato de T1 (lo que T5 consume): `obtenerCuentas()` devuelve `{ ingresos, gas
 - L5 (2026-11-05): "no, no quiero que se quite el boton manuel y que eso se mantenga igual. aparte el registrado es unicamente para gastos, que solo son dos personas (juan diego y albert). para cuando hay un ingreso se debe de seleccionar quien fue la persona que dio esa plata"
 - L6 (2026-11-05): "para ingresos no es necesario poner evidencia, es lo unico que se cambiaria"
 - L7 (2026-11-05): "Podemos empezar a implementarlo. recuerda que vamos a trabajr con gentle ai y vamos a distribuir este proyecto con antigravity y claude code, entonces vas a irme guiando que es lo que tengo que hacer e irme explicando de manera correcta. Adicionalmente este es un repositorio de git, podemos ir haciendo commits. estructuremos eso y ahi si empezamos"
+- 2026-11-05: Revisión nativa, commits T0+T1 (base `ba51129`): `assess` dio riesgo medio, 171 líneas, `review_due: false` (`under_budget`). No se inició revisión; la rebanada sigue abierta hasta llegar al presupuesto (~400 líneas) o a una unidad de riesgo alto. Risk de T1: none (archivos nuevos que nadie consume todavía).
 - 2026-11-05: Decisiones mías, a redirigir si no gustan: Firebase Storage para las fotos (Drive no deja subir con cuenta de servicio en cuentas personales; sin verificar); reutilizar la cuenta de servicio actual para Sheets; un solo PIN para los dos admins; commits en Conventional Commits sin atribución.

@@ -4,7 +4,7 @@ import { type Firestore, getFirestore } from "firebase-admin/firestore";
 
 let db: Firestore | undefined;
 
-function cargarCredenciales() {
+export function cargarCredenciales() {
   const json = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (!json) return null;
   const parsed = JSON.parse(json) as {
