@@ -59,8 +59,12 @@ export async function borrarFilas(pestana: string, filas: number[]): Promise<voi
   await getCliente().request({ url: `${API}/${idHoja()}:batchUpdate`, method: "POST", data: { requests } });
 }
 
-/** Agrega una fila al final de la tabla de esa pestaña (por ejemplo "Gastos!A:E"). */
+/**
+ * Agrega una fila al final de la tabla de esa pestaña (por ejemplo "Gastos!A:E").
+ * Escribe en la primera fila libre (OVERWRITE) en vez de insertar una: insertar en una tabla vacía
+ * empuja hacia abajo las fórmulas del Resumen y la fila nueva hereda el verde del encabezado.
+ */
 export async function agregarFila(rango: string, fila: Celda[]): Promise<void> {
-  const url = `${API}/${idHoja()}/values/${encodeURIComponent(rango)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+  const url = `${API}/${idHoja()}/values/${encodeURIComponent(rango)}:append?valueInputOption=RAW&insertDataOption=OVERWRITE`;
   await getCliente().request({ url, method: "POST", data: { values: [fila] } });
 }

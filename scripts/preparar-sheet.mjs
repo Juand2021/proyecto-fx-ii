@@ -15,6 +15,7 @@ const ORIGENES = ["Cupo", "Abono"]; // igual que ORIGENES de src/lib/finanzas.ts
 const PESOS = { type: "NUMBER", pattern: "$#,##0" };
 const VERDE = { red: 0.059, green: 0.541, blue: 0.235 };
 const BLANCO = { red: 1, green: 1, blue: 1 };
+const NEGRO = { red: 0, green: 0, blue: 0 };
 
 const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
 const id = process.env.GOOGLE_SHEET_ID;
@@ -70,6 +71,14 @@ const encabezado = (sheetId, col1, fila = 0) => ({
     fields: "userEnteredFormat(backgroundColor,textFormat)",
   },
 });
+// Filas de datos con formato plano (sin el verde del encabezado), hasta el final de la hoja.
+const datosPlanos = (sheetId, col1) => ({
+  repeatCell: {
+    range: { sheetId, startRowIndex: 1, startColumnIndex: 0, endColumnIndex: col1 },
+    cell: { userEnteredFormat: { backgroundColor: BLANCO, textFormat: { bold: false, foregroundColor: NEGRO } } },
+    fields: "userEnteredFormat(backgroundColor,textFormat)",
+  },
+});
 const formatoPesos = (sheetId, fila0, col0, col1) => ({
   repeatCell: {
     range: rango(sheetId, fila0, FILAS, col0, col1),
@@ -106,6 +115,7 @@ async function darFormato({ ids, nuevas }) {
     propiedades(gastos, { index: 2, gridProperties: { frozenRowCount: 1 } }, "index,gridProperties.frozenRowCount"),
 
     encabezado(ingresos, 4),
+    datosPlanos(ingresos, 4),
     formatoPesos(ingresos, 1, 2, 3),
     ancho(ingresos, 0, 110),
     ancho(ingresos, 1, 220),
@@ -123,6 +133,7 @@ async function darFormato({ ids, nuevas }) {
     },
 
     encabezado(gastos, 5),
+    datosPlanos(gastos, 5),
     formatoPesos(gastos, 1, 2, 3),
     ancho(gastos, 0, 110),
     ancho(gastos, 1, 280),
@@ -169,6 +180,8 @@ async function darFormato({ ids, nuevas }) {
 }
 
 // 3) Encabezados y fórmulas. El Resumen se calcula solo a partir de las otras dos pestañas.
+// Las fórmulas usan columnas completas (C:C) y no rangos como C2:C: Google Sheets corre el inicio de un
+// rango cuando se inserta o borra una fila en su primera fila, y así el Resumen dejaba de contar los datos.
 async function escribirContenido() {
   const data = [
     { range: "Ingresos!A1:D1", values: [["Fecha", "Persona", "Monto COP", "Origen"]] },
@@ -179,8 +192,8 @@ async function escribirContenido() {
         ["Resumen del paseo", ""],
         ["", ""],
         ["Meta por persona", META],
-        ["Total recaudado", "=SUM(Ingresos!C2:C)"],
-        ["Total gastado", "=SUM(Gastos!C2:C)"],
+        ["Total recaudado", "=SUM(Ingresos!C:C)"],
+        ["Total gastado", "=SUM(Gastos!C:C)"],
         ["Saldo disponible", "=B4-B5"],
       ],
     },
@@ -189,8 +202,8 @@ async function escribirContenido() {
       range: "Resumen!A9:D9",
       values: [
         [
-          '=IFERROR(SORT(UNIQUE(FILTER(Ingresos!B2:B,Ingresos!B2:B<>""))),"")',
-          '=ARRAYFORMULA(IF(A9:A="","",SUMIF(Ingresos!B2:B,A9:A,Ingresos!C2:C)))',
+          '=IFERROR(SORT(UNIQUE(FILTER(Ingresos!B:B,Ingresos!B:B<>"",ROW(Ingresos!B:B)>1))),"")',
+          '=ARRAYFORMULA(IF(A9:A="","",SUMIF(Ingresos!B:B,A9:A,Ingresos!C:C)))',
           '=ARRAYFORMULA(IF(A9:A="","",IF(B9:B>=$B$3,0,$B$3-B9:B)))',
           '=ARRAYFORMULA(IF(A9:A="","",IF(B9:B>=$B$3,"Completo","Debe")))',
         ],
