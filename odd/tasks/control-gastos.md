@@ -21,7 +21,7 @@ Rutas: `CC` = Claude Code (inline), `AG` = Antigravity (unidad paralela, superfi
 | ID | Specs | Ruta | Superficie de edición | Estado | Commit |
 |---|---|---|---|---|---|
 | T0 | — | CC | `odd/tasks/control-gastos.md` | hecha | `docs: plan de control de gastos` |
-| T1 | S3 S4 S5 | CC | `src/lib/movimientos.ts`, `src/lib/finanzas.ts` | pendiente | — |
+| T1 | S3 S4 S5 | CC | `src/lib/movimientos.ts`, `src/lib/finanzas.ts` | hecha (lint OK, cálculos verificados con script; `tsc` solo da 2 errores previos de `PageProps`/`LayoutProps`, que Next genera al correr dev/build) | `feat: contrato y cálculos del control de gastos` |
 | T2 | S1 S8 | CC | `src/lib/sheets.ts`, `package.json`, `.env.example` | pendiente | — |
 | T3 | S3 | CC | `src/lib/evidencia.ts`, `src/lib/firebase.ts` | pendiente | — |
 | T4 | S2 S3 S4 S6 S7 | CC | `src/app/admin/**` | pendiente | — |
