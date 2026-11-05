@@ -55,6 +55,13 @@ La fila 1 de `Ingresos` y `Gastos` son los encabezados y la app depende de ellos
 5. Para que el grupo lo vea sin poder editarlo: en el Sheet, **Compartir → Acceso general → Cualquier persona con el enlace → Lector**.
 6. En Vercel, agregar `GOOGLE_SHEET_ID` y `SITE_URL` a las variables de entorno. `FIREBASE_SERVICE_ACCOUNT` y `ADMIN_PIN` ya están.
 
+## Cómo dejar el Excel limpio o borrar algo
+
+- **Para borrar movimientos** (por ejemplo, pruebas o un registro equivocado): en `Ingresos` o `Gastos`, seleccionar las filas de datos (de la 2 hacia abajo, nunca la 1) y usar clic derecho → *Eliminar filas*. El Resumen se recalcula solo, incluso si se borran todas.
+- **No editar la pestaña `Resumen`:** todo se calcula solo. Aunque la tabla de personas parezca filas normales, sale de una sola fórmula en la celda `A9`; borrar una fila de ahí la desarma. La pestaña tiene una protección que pide confirmar antes de editar.
+- **Si el Resumen se daña igual** (vacío, en $0 o con errores): en `/admin`, botón **Reparar Resumen del Excel**. Lo reconstruye sin tocar ingresos ni gastos. La app también lo revisa sola después de cada ingreso, gasto o cambio de cupo.
+- Borrar a mano la fila de un cupo (Origen `Cupo`) no cambia el botón DEBE de esa persona: para que coincidan, hay que cambiar el botón en `/admin`.
+
 ## Fotos de evidencia
 
 La foto se achica en el navegador (lado máximo 1280 px, JPEG) y queda en Firestore, así que no hace falta Firebase Storage ni plan de pago. El tope es 700 KB por foto. Cualquiera con el link de una foto la puede ver; el id es un código largo que no se puede adivinar.
@@ -63,6 +70,6 @@ La foto se achica en el navegador (lado máximo 1280 px, JPEG) y queda en Firest
 
 - **"No se pudo escribir en el Sheet":** revisar que esté compartido como Editor con la cuenta de servicio y que `GOOGLE_SHEET_ID` sea correcto.
 - **Aviso de modo prueba en `/admin`** (solo en desarrollo): falta `GOOGLE_SHEET_ID` o `FIREBASE_SERVICE_ACCOUNT`; los movimientos son de ejemplo y no se guardan. En producción no hay modo prueba: sin esas variables `/cuentas` muestra "No se pudieron cargar los movimientos" y `/admin` da error al guardar, en vez de mostrar plata inventada.
-- **El Resumen del Excel está en $0 aunque `Ingresos` tenga filas, o las filas nuevas salen en verde:** correr `npm run sheet:preparar`. Repara las fórmulas (usan columnas completas, `Ingresos!C:C`, para que Google Sheets no les corra el rango) y deja las filas de datos con formato plano. La app escribe en la primera fila libre sin insertar filas, justamente para no volver a causarlo.
+- **El Resumen del Excel está en $0 aunque `Ingresos` tenga filas, o las filas nuevas salen en verde:** primero el botón **Reparar Resumen del Excel** de `/admin`; si no basta, `npm run sheet:preparar`. Repara las fórmulas (usan columnas completas, `Ingresos!C:C`, para que Google Sheets no les corra el rango) y deja las filas de datos con formato plano. La app escribe en la primera fila libre sin insertar filas, justamente para no volver a causarlo.
 - **Alguien marcado como pagó pero sin fila de cupo en el Sheet** (por ejemplo, porque se marcó antes de existir esta función): pasarlo a DEBE y de nuevo a pagado agrega su fila.
 - **Una fila mal escrita a mano en el Sheet** (sin monto, o con un "Registrado por" distinto de los dos nombres) se ignora en la web.

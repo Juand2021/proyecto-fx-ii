@@ -33,11 +33,31 @@ function idHoja(): string {
   return id;
 }
 
-/** Filas del rango (por ejemplo "Gastos!A2:E"). Los números llegan como número, sin formato. */
-export async function leerFilas(rango: string): Promise<Celda[][]> {
-  const url = `${API}/${idHoja()}/values/${encodeURIComponent(rango)}?valueRenderOption=UNFORMATTED_VALUE`;
+/**
+ * Filas del rango (por ejemplo "Gastos!A2:E"). Por defecto los números llegan como número, sin formato;
+ * con "FORMULA" las celdas con fórmula llegan como el texto de la fórmula.
+ */
+export async function leerFilas(
+  rango: string,
+  formato: "UNFORMATTED_VALUE" | "FORMULA" | "FORMATTED_VALUE" = "UNFORMATTED_VALUE",
+): Promise<Celda[][]> {
+  const url = `${API}/${idHoja()}/values/${encodeURIComponent(rango)}?valueRenderOption=${formato}`;
   const res = await getCliente().request<{ values?: Celda[][] }>({ url });
   return res.data.values ?? [];
+}
+
+/** Escribe varios bloques a la vez; los textos que empiezan con "=" se guardan como fórmulas. */
+export async function escribirBloques(bloques: { range: string; values: Celda[][] }[]): Promise<void> {
+  await getCliente().request({
+    url: `${API}/${idHoja()}/values:batchUpdate`,
+    method: "POST",
+    data: { valueInputOption: "USER_ENTERED", data: bloques },
+  });
+}
+
+/** Vacía el contenido (no el formato) de los rangos. */
+export async function limpiarRangos(rangos: string[]): Promise<void> {
+  await getCliente().request({ url: `${API}/${idHoja()}/values:batchClear`, method: "POST", data: { ranges: rangos } });
 }
 
 /**

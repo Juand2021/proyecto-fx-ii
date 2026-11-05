@@ -1,12 +1,14 @@
 import { REGISTRADORES } from "@/lib/finanzas";
 import { movimientosEnDemo, obtenerCuentas } from "@/lib/movimientos";
 import { formatoPesos } from "@/lib/viaje";
-import { agregarGasto, agregarIngreso } from "./acciones";
+import { agregarGasto, agregarIngreso, repararExcel } from "./acciones";
 import { FotoInput } from "./FotoInput";
 
 const AVISOS: Record<string, { texto: string; bueno: boolean }> = {
   "ok:ingreso": { texto: "Ingreso guardado en el Sheet.", bueno: true },
   "ok:gasto": { texto: "Gasto guardado en el Sheet.", bueno: true },
+  "ok:resumen-reparado": { texto: "Resumen del Excel reparado.", bueno: true },
+  "ok:resumen-ok": { texto: "El Resumen del Excel está en orden, no hizo falta repararlo.", bueno: true },
   "error:ingreso": { texto: "Revise la persona y el monto del ingreso.", bueno: false },
   "error:gasto": { texto: "Al gasto le falta el motivo, el monto o quién lo registra.", bueno: false },
   "error:foto": { texto: "Falta la foto de evidencia o no se pudo guardar.", bueno: false },
@@ -77,6 +79,14 @@ export async function SeccionPlata({ personas, ok, error }: { personas: string[]
         </select>
         <FotoInput />
         <button className={BOTON}>Guardar gasto</button>
+      </form>
+
+      <form action={repararExcel} className="flex flex-col gap-1">
+        <button className="rounded-lg border px-4 py-2 text-sm font-semibold">Reparar Resumen del Excel</button>
+        <p className="text-xs opacity-70">
+          Úselo si el Resumen del Excel se ve vacío o en $0. Solo reconstruye el Resumen; no toca los ingresos ni los
+          gastos.
+        </p>
       </form>
     </section>
   );

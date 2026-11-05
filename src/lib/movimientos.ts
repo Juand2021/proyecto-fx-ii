@@ -1,7 +1,8 @@
 import "server-only";
 import { type Cuentas, type Gasto, type Ingreso, type Origen, calcularCuentas, esRegistrador, fechaHoy } from "./finanzas";
 import { listarPersonas } from "./personas";
-import { type Celda, agregarFila, borrarFilas, leerFilas, sheetConfigurado } from "./sheets";
+import { celdasResumen, contenidoResumen } from "./resumen-sheet.mjs";
+import { type Celda, agregarFila, borrarFilas, escribirBloques, leerFilas, limpiarRangos, sheetConfigurado } from "./sheets";
 import { VIAJE } from "./viaje";
 
 export type NuevoIngreso = Pick<Ingreso, "persona" | "monto"> & { origen?: Origen };
@@ -50,6 +51,46 @@ const noNulo = <T>(x: T | null): x is T => x !== null;
 /** ¿Esta fila de Ingresos es el cupo automático de esa persona? Exige Origen exactamente "Cupo". */
 const esCupoDe = (persona: string) => (fila: Celda[]) => texto(fila[1]) === persona && texto(fila[3]) === "Cupo";
 
+/** ¿El Resumen tiene todos sus rótulos y fórmulas? La meta (B3) puede ser cualquier número. */
+function resumenIntacto(filas: Celda[][]): boolean {
+  return celdasResumen(VIAJE.costoTotal).every(({ fila, col, valor }) => {
+    const actual = filas[fila]?.[col];
+    if (fila === 2 && col === 1) return typeof actual === "number";
+    return String(actual ?? "").trim() === String(valor);
+  });
+}
+
+/**
+ * Revisa el Resumen del Sheet y, si alguien borró o cambió algo (por ejemplo la celda A9, que genera toda la
+ * tabla de personas), lo reconstruye. No toca Ingresos ni Gastos. Devuelve true si tuvo que repararlo.
+ */
+export async function repararResumen(): Promise<boolean> {
+  if (movimientosEnDemo()) return false;
+  const filas = await leerFilas("Resumen!A1:D9", "FORMULA");
+  const intacto = resumenIntacto(filas);
+  if (intacto && !(await tablaBloqueada())) return false;
+  const meta = typeof filas[2]?.[1] === "number" ? filas[2][1] : VIAJE.costoTotal;
+  if (!intacto) {
+    await limpiarRangos(["Resumen!A1:Z8", "Resumen!E9:Z1000"]);
+    await escribirBloques(contenidoResumen(meta));
+  }
+  // Si algo escrito a mano debajo de la tabla la bloquea (la fórmula sigue ahí pero da #REF!), se limpia.
+  if (await tablaBloqueada()) {
+    await limpiarRangos(["Resumen!A9:D1000"]);
+    await escribirBloques(contenidoResumen(meta));
+  }
+  return true;
+}
+
+/** La fórmula de A9 da error (por ejemplo #REF!) cuando algo escrito a mano le tapa el camino hacia abajo. */
+async function tablaBloqueada(): Promise<boolean> {
+  const [[a9] = []] = await leerFilas("Resumen!A9", "FORMATTED_VALUE");
+  return typeof a9 === "string" && a9.startsWith("#");
+}
+
+/** Lo mismo, tras cada escritura y sin que un fallo aquí estropee el movimiento ya guardado. */
+const curarResumen = () => repararResumen().catch(() => false);
+
 export async function obtenerCuentas(): Promise<Cuentas> {
   const personas = (await listarPersonas()).map((p) => p.nombre);
   if (movimientosEnDemo()) return calcularCuentas([...ingresosDemo], [...gastosDemo], personas);
@@ -65,6 +106,7 @@ export async function registrarIngreso(nuevo: NuevoIngreso): Promise<void> {
     return;
   }
   await agregarFila(INGRESOS.agregar, [fecha, nuevo.persona, nuevo.monto, origen]);
+  await curarResumen();
 }
 
 /**
@@ -81,6 +123,7 @@ export async function asegurarCupo(persona: string): Promise<boolean> {
   const filas = await leerFilas(INGRESOS.leer);
   if (filas.some(esCupoDe(persona))) return false;
   await agregarFila(INGRESOS.agregar, [fechaHoy(), persona, VIAJE.cupo, "Cupo"]);
+  await curarResumen();
   return true;
 }
 
@@ -100,6 +143,7 @@ export async function quitarCupo(persona: string): Promise<number> {
   // Los datos empiezan en la fila 2 de la hoja, que es el índice 1 (el 0 es el encabezado).
   const indices = filas.flatMap((fila, i) => (esCupoDe(persona)(fila) ? [i + 1] : []));
   await borrarFilas("Ingresos", indices);
+  await curarResumen();
   return indices.length;
 }
 
@@ -110,4 +154,5 @@ export async function registrarGasto(nuevo: NuevoGasto): Promise<void> {
     return;
   }
   await agregarFila(GASTOS.agregar, [fecha, nuevo.motivo, nuevo.monto, nuevo.evidencia, nuevo.registradoPor]);
+  await curarResumen();
 }

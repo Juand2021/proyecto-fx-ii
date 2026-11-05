@@ -7,7 +7,7 @@ import { COOKIE_ADMIN, esAdmin, pinCorrecto, tokenAdmin } from "@/lib/admin-auth
 import { guardarEvidencia, urlEvidencia } from "@/lib/evidencia";
 import { camposDe, esAccion } from "@/lib/estado";
 import { esRegistrador, parsearPesos } from "@/lib/finanzas";
-import { asegurarCupo, quitarCupo, registrarGasto, registrarIngreso } from "@/lib/movimientos";
+import { asegurarCupo, quitarCupo, registrarGasto, registrarIngreso, repararResumen } from "@/lib/movimientos";
 import { actualizarPersona, crearPersona, eliminarPersona, listarPersonas } from "@/lib/personas";
 
 const MONTO_MAXIMO = 100_000_000;
@@ -70,6 +70,18 @@ export async function borrar(formData: FormData) {
   await exigirAdmin();
   await eliminarPersona(String(formData.get("id")));
   refrescar();
+}
+
+/** Reconstruye el Resumen del Excel si alguien lo dañó. No toca los ingresos ni los gastos. */
+export async function repararExcel() {
+  await exigirAdmin();
+  const resultado = await repararResumen().then(
+    (reparo) => (reparo ? "resumen-reparado" : "resumen-ok"),
+    () => null,
+  );
+  if (!resultado) redirect("/admin?error=sheet");
+  refrescar();
+  redirect(`/admin?ok=${resultado}`);
 }
 
 /** Ingreso: alguien abona plata. Va a la pestaña Ingresos del Sheet. */

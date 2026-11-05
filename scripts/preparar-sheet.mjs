@@ -6,6 +6,7 @@
 // Lee FIREBASE_SERVICE_ACCOUNT y GOOGLE_SHEET_ID de .env.local.
 
 import { JWT } from "google-auth-library";
+import { contenidoResumen } from "../src/lib/resumen-sheet.mjs";
 
 const API = "https://sheets.googleapis.com/v4/spreadsheets";
 const FILAS = 1000;
@@ -94,18 +95,24 @@ const ancho = (sheetId, col, pixeles) => ({
   },
 });
 const propiedades = (sheetId, extra, fields) => ({ updateSheetProperties: { properties: { sheetId, ...extra }, fields } });
+// Protecciones "solo advertencia": Google pide confirmar antes de editar, pero no bloquea a nadie.
+const DESC_ENCABEZADOS = "Encabezados: no tocar, la app depende de ellos";
+const DESC_RESUMEN = "Resumen: se calcula solo, no editar. Si se daña, usar «Reparar Excel» en el admin";
 const proteger = (sheetId, col1) => ({
   addProtectedRange: {
-    protectedRange: {
-      range: rango(sheetId, 0, 1, 0, col1),
-      description: "Encabezados: no tocar, la app depende de ellos",
-      warningOnly: true,
-    },
+    protectedRange: { range: rango(sheetId, 0, 1, 0, col1), description: DESC_ENCABEZADOS, warningOnly: true },
   },
 });
+const protegerHoja = (sheetId) => ({
+  addProtectedRange: { protectedRange: { range: { sheetId }, description: DESC_RESUMEN, warningOnly: true } },
+});
+async function proteccionesExistentes() {
+  const r = await pedir("?fields=sheets(properties.sheetId,protectedRanges.description)");
+  return new Set(r.data.sheets.flatMap((s) => (s.protectedRanges ?? []).map((p) => `${s.properties.sheetId}|${p.description}`)));
+}
 
 // 2) Formato, validaciones y protección de encabezados.
-async function darFormato({ ids, nuevas }) {
+async function darFormato({ ids }) {
   const resumen = ids.get("Resumen");
   const ingresos = ids.get("Ingresos");
   const gastos = ids.get("Gastos");
@@ -173,42 +180,21 @@ async function darFormato({ ids, nuevas }) {
     ancho(resumen, 2, 140),
     ancho(resumen, 3, 120),
   ];
-  // Las protecciones se agregan solo al crear la pestaña, para no duplicarlas al repetir el script.
-  if (nuevas.has("Ingresos")) requests.push(proteger(ingresos, 4));
-  if (nuevas.has("Gastos")) requests.push(proteger(gastos, 5));
+  // Cada protección se agrega solo si no existe ya, para no duplicarlas al repetir el script.
+  const existentes = await proteccionesExistentes();
+  if (!existentes.has(`${ingresos}|${DESC_ENCABEZADOS}`)) requests.push(proteger(ingresos, 4));
+  if (!existentes.has(`${gastos}|${DESC_ENCABEZADOS}`)) requests.push(proteger(gastos, 5));
+  if (!existentes.has(`${resumen}|${DESC_RESUMEN}`)) requests.push(protegerHoja(resumen));
   await lote(requests);
 }
 
-// 3) Encabezados y fórmulas. El Resumen se calcula solo a partir de las otras dos pestañas.
-// Las fórmulas usan columnas completas (C:C) y no rangos como C2:C: Google Sheets corre el inicio de un
-// rango cuando se inserta o borra una fila en su primera fila, y así el Resumen dejaba de contar los datos.
+// 3) Encabezados y fórmulas. El Resumen se calcula solo a partir de las otras dos pestañas
+// (sus fórmulas están en src/lib/resumen-sheet.mjs).
 async function escribirContenido() {
   const data = [
     { range: "Ingresos!A1:D1", values: [["Fecha", "Persona", "Monto COP", "Origen"]] },
     { range: "Gastos!A1:E1", values: [["Fecha", "Motivo", "Monto COP", "Evidencia", "Registrado por"]] },
-    {
-      range: "Resumen!A1:B6",
-      values: [
-        ["Resumen del paseo", ""],
-        ["", ""],
-        ["Meta por persona", META],
-        ["Total recaudado", "=SUM(Ingresos!C:C)"],
-        ["Total gastado", "=SUM(Gastos!C:C)"],
-        ["Saldo disponible", "=B4-B5"],
-      ],
-    },
-    { range: "Resumen!A8:D8", values: [["Persona", "Abonado", "Falta", "Estado"]] },
-    {
-      range: "Resumen!A9:D9",
-      values: [
-        [
-          '=IFERROR(SORT(UNIQUE(FILTER(Ingresos!B:B,Ingresos!B:B<>"",ROW(Ingresos!B:B)>1))),"")',
-          '=ARRAYFORMULA(IF(A9:A="","",SUMIF(Ingresos!B:B,A9:A,Ingresos!C:C)))',
-          '=ARRAYFORMULA(IF(A9:A="","",IF(B9:B>=$B$3,0,$B$3-B9:B)))',
-          '=ARRAYFORMULA(IF(A9:A="","",IF(B9:B>=$B$3,"Completo","Debe")))',
-        ],
-      ],
-    },
+    ...contenidoResumen(META), // el mismo contenido que usa la app para repararlo
   ];
   await pedir("/values:batchUpdate", "POST", { valueInputOption: "USER_ENTERED", data });
 }
