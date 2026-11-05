@@ -1,0 +1,44 @@
+# Control de gastos (Google Sheet)
+
+Objetivo: registrar ingresos y gastos del paseo desde `/admin` y guardarlos en un Google Sheet público de solo lectura, visible en `/cuentas`.
+Rama: `feat/control-gastos` · Entrega: `ask-on-risk` · Test runner: ninguno configurado (verificación con `npm run lint`, `npm run build` y modo demo).
+
+## Specs
+
+- S1. Un Sheet público: "poner un archivo de excel publico para que las personas puedan ver los gastos pero que ellos no puedan editarlo, solo visualizar". Va en Drive; lector para cualquiera con el link, editor solo la cuenta de servicio.
+- S2. Panel admin: "desde el panel de admin haya un apartado para justamente desarrollar el tipo de control de gastos y que estos se guarden en el excel y que este se vea reflejado en el panel donde los demas lo veran".
+- S3. Gasto: "ingresar el motivo o titulo de la compra, el total de la compra en pesos colombianos, foto para evidencia". Además "registrado por" con dos opciones: Juan Diego y Albert. Solo aplica a gastos.
+- S4. Ingreso: "cuando hay un ingreso se debe de seleccionar quien fue la persona que dio esa plata". Sin evidencia ("para ingresos no es necesario poner evidencia"). Una persona puede abonar varias veces ("catalina abono 50 y despues dio 200") y se suma por persona hasta la meta de $250.000.
+- S5. Resumen en el Sheet y en `/cuentas`: abonado por persona vs. meta, "el total de plata que hay y la que se puede utilizar para gastar" (suposición: saldo disponible = ingresos − gastos).
+- S6. "no quiero que se quite el boton manuel y que eso se mantenga igual": el botón DEBE/pagó cupo no cambia y es independiente de los abonos.
+- S7. "manejar la misma arquitectura, diseño y funcionalidad": todo del lado del servidor, mismo PIN único para los dos admins, visitantes sin login, mismo estilo visual.
+- S8. El Sheet es la única fuente de los movimientos, organizado como tabla: pestañas `Ingresos` (Fecha, Persona, Monto), `Gastos` (Fecha, Motivo, Monto COP, Evidencia, Registrado por) y `Resumen` (fórmulas). El archivo es un Google Sheet, descargable como Excel.
+
+## Tareas
+
+Rutas: `CC` = Claude Code (inline), `AG` = Antigravity (unidad paralela, superficies disjuntas).
+
+| ID | Specs | Ruta | Superficie de edición | Estado | Commit |
+|---|---|---|---|---|---|
+| T0 | — | CC | `odd/tasks/control-gastos.md` | hecha | `docs: plan de control de gastos` |
+| T1 | S3 S4 S5 | CC | `src/lib/movimientos.ts`, `src/lib/finanzas.ts` | pendiente | — |
+| T2 | S1 S8 | CC | `src/lib/sheets.ts`, `package.json`, `.env.example` | pendiente | — |
+| T3 | S3 | CC | `src/lib/evidencia.ts`, `src/lib/firebase.ts` | pendiente | — |
+| T4 | S2 S3 S4 S6 S7 | CC | `src/app/admin/**` | pendiente | — |
+| T5 | S2 S5 S7 | AG | `src/app/cuentas/**`, `src/components/cuentas/**` | pendiente | — |
+| T6 | S1 S5 S8 | CC | `scripts/preparar-sheet.mjs`, `docs/control-gastos.md`, `docs/arquitectura.md`, `README.md` | pendiente | — |
+
+Orden: T1 primero (es el contrato). Luego T2, T3, T4 y T6 en Claude Code y T5 en Antigravity, en paralelo. T4 depende de T2 y T3; T5 solo del contrato de T1 y trabaja con datos demo.
+
+Contrato de T1 (lo que T5 consume): `obtenerCuentas()` devuelve `{ ingresos, gastos, porPersona, totalIngresos, totalGastos, saldo }`; en modo demo (sin credenciales) usa datos en memoria.
+
+## Log
+
+- L1 (2026-11-05, pedido original): "para el proyecto hay que hacerles mejoras, estaria bien manejar la misma arquitectura, diseño y funcionalidad. La mejora serian 2 partes, primera parte poner un archivo de excel publico para que las personas puedan ver los gastos pero que ellos no puedan editarlo, solo visualizar y que ellos tengan una transparencia sobre los gastos que se realizan en el viaje, este excel podria ser en un drive. La otra mejora es que desde el panel de admin haya un apartado para justamente desarrollar el tipo de control de gastos y que estos se guarden en el excel y que este se vea reflejado en el panel donde los demas lo veran. Lo ideal es desarrollar algo como un control de gastos, en donde haya la opcion de que eso se organice de manera limpia en el excel, que por ejemplo se realice una compra y uno tenga que ingresar el motivo o titulo de la compra, el total de la compra en pesos colombianos, foto para evidencia y que esto se refleje de manera organizada en el excel y de asi mismo ingresar los ingresos. Quiero que antes de desarrollar lo planteemos bien que lo desarrollemos con gentle ai, que se estructure bien e ir opinando los dos"
+- L2 (2026-11-05): "la verdad quisiera que esto se guardara en un archivo de excel, solo dos personas van a poder modificar este archivo y necesito que esto se organice tipo tabla, en donde se guarde los campos que he solicitado."
+- L3 (2026-11-05): "si, la otra persona entra normal como admin, la cuenta admin es una general solo para dos personas, asi nos evitamos que mas miebros del grupo interactuen"
+- L4 (2026-11-05): "cada persona da 50 mil para apartar su cupo, esto va como tipo ingreso, entonces lo ideal es que haya una seccion en el excel donde se muestren los ingresos y otra los gastos, entonces digamos catalina abono 50 y despues dio 200 (cumple con la meta de 250 por persona). entonces lo ideal es que esto se vaya sumando por persona. despues que se vaya tambien actualizando y muestre el total de plata que hay y la que se puede utilizar para gastar"
+- L5 (2026-11-05): "no, no quiero que se quite el boton manuel y que eso se mantenga igual. aparte el registrado es unicamente para gastos, que solo son dos personas (juan diego y albert). para cuando hay un ingreso se debe de seleccionar quien fue la persona que dio esa plata"
+- L6 (2026-11-05): "para ingresos no es necesario poner evidencia, es lo unico que se cambiaria"
+- L7 (2026-11-05): "Podemos empezar a implementarlo. recuerda que vamos a trabajr con gentle ai y vamos a distribuir este proyecto con antigravity y claude code, entonces vas a irme guiando que es lo que tengo que hacer e irme explicando de manera correcta. Adicionalmente este es un repositorio de git, podemos ir haciendo commits. estructuremos eso y ahi si empezamos"
+- 2026-11-05: Decisiones mías, a redirigir si no gustan: Firebase Storage para las fotos (Drive no deja subir con cuenta de servicio en cuentas personales; sin verificar); reutilizar la cuenta de servicio actual para Sheets; un solo PIN para los dos admins; commits en Conventional Commits sin atribución.
