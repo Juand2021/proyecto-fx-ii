@@ -4,6 +4,7 @@ import { esAdmin } from "@/lib/admin-auth";
 import { APAGADO, COLOR, type Accion, debe, va } from "@/lib/estado";
 import { listarPersonas, modoDemo } from "@/lib/personas";
 import { agregar, borrar, entrar, marcar, salir } from "./acciones";
+import { SeccionPlata } from "./SeccionPlata";
 
 export const metadata: Metadata = {
   title: "Admin · Proyecto F(x) II",
@@ -14,7 +15,7 @@ const VOLVER =
   "inline-flex items-center gap-1.5 rounded-full border-[3px] border-tinta bg-crema px-4 py-2 text-sm font-black sombra-dura transition-transform active:translate-x-0.5 active:translate-y-0.5";
 
 export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
-  const { error } = await searchParams;
+  const { error, ok } = await searchParams;
 
   if (!(await esAdmin())) {
     return (
@@ -63,6 +64,13 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         </p>
       )}
 
+      <SeccionPlata
+        personas={personas.map((p) => p.nombre)}
+        ok={typeof ok === "string" ? ok : undefined}
+        error={typeof error === "string" ? error : undefined}
+      />
+
+      <h2 className="text-lg font-bold">Pasajeros</h2>
       <p className="text-sm">
         {personas.length} personas · {van} van · {personas.length - van} no van · {deben} deben
       </p>
