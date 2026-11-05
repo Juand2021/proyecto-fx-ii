@@ -174,7 +174,7 @@ export default async function Cuentas() {
               />
             </Caja>
 
-            <Caja tag="ABONOS A LA META ($250.000)" delay={240}>
+            <Caja tag={`ABONOS A LA META (${formatoPesos(VIAJE.costoTotal)})`} delay={240}>
               <AbonosPersona porPersona={cuentas.porPersona} />
             </Caja>
 

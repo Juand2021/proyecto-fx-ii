@@ -31,19 +31,21 @@ export function ResumenFinanzas({ totalIngresos, totalGastos, saldo }: ResumenFi
         </div>
       </div>
 
-      {/* Botón Ver el Excel */}
-      <div className="mt-1">
-        <a
-          href={sheetUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-tinta bg-sol px-4 py-3 text-center text-sm font-black uppercase tracking-wide text-tinta sombra-dura transition-transform hover:-rotate-1 active:translate-x-0.5 active:translate-y-0.5"
-        >
-          <span aria-hidden="true">📊</span>
-          <span>Ver el Excel</span>
-          <span className="text-xs">↗</span>
-        </a>
-      </div>
+      {/* Botón Ver el Excel: solo si hay Sheet configurado */}
+      {sheetId && (
+        <div className="mt-1">
+          <a
+            href={sheetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-tinta bg-sol px-4 py-3 text-center text-sm font-black uppercase tracking-wide text-tinta sombra-dura transition-transform hover:-rotate-1 active:translate-x-0.5 active:translate-y-0.5"
+          >
+            <span aria-hidden="true">📊</span>
+            <span>Ver el Excel</span>
+            <span className="text-xs">↗</span>
+          </a>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import type { AbonoPersona } from "@/lib/finanzas";
-import { formatoPesos } from "@/lib/viaje";
+import { VIAJE, formatoPesos } from "@/lib/viaje";
 
 type AbonosPersonaProps = {
   porPersona: AbonoPersona[];
@@ -17,7 +17,7 @@ export function AbonosPersona({ porPersona }: AbonosPersonaProps) {
   return (
     <div>
       <p className="mb-3 text-xs font-bold text-tinta/70">
-        Meta: {formatoPesos(250_000)} por persona para el viaje completo.
+        Meta: {formatoPesos(VIAJE.costoTotal)} por persona para el viaje completo.
       </p>
       <ul className="divide-y-2 divide-tinta/15">
         {porPersona.map((p) => (
