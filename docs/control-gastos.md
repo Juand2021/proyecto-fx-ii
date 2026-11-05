@@ -62,6 +62,6 @@ La foto se achica en el navegador (lado máximo 1280 px, JPEG) y queda en Firest
 ## Si algo falla
 
 - **"No se pudo escribir en el Sheet":** revisar que esté compartido como Editor con la cuenta de servicio y que `GOOGLE_SHEET_ID` sea correcto.
-- **Aviso de modo prueba en `/admin`:** falta `GOOGLE_SHEET_ID` o `FIREBASE_SERVICE_ACCOUNT`; los movimientos no se guardan.
+- **Aviso de modo prueba en `/admin`** (solo en desarrollo): falta `GOOGLE_SHEET_ID` o `FIREBASE_SERVICE_ACCOUNT`; los movimientos son de ejemplo y no se guardan. En producción no hay modo prueba: sin esas variables `/cuentas` muestra "No se pudieron cargar los movimientos" y `/admin` da error al guardar, en vez de mostrar plata inventada.
 - **Alguien marcado como pagó pero sin fila de cupo en el Sheet** (por ejemplo, porque se marcó antes de existir esta función): pasarlo a DEBE y de nuevo a pagado agrega su fila.
 - **Una fila mal escrita a mano en el Sheet** (sin monto, o con un "Registrado por" distinto de los dos nombres) se ignora en la web.

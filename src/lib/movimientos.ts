@@ -21,8 +21,10 @@ const gastosDemo: Gasto[] = [
   { fecha: "2026-11-04", motivo: "Mercado para el sancocho", monto: 120_000, evidencia: "", registradoPor: "Albert" },
 ];
 
+// Los datos de ejemplo son solo para desarrollo. En producción, sin Sheet configurado, es mejor mostrar
+// un error que plata inventada: las páginas ya lo manejan con un aviso.
 export function movimientosEnDemo(): boolean {
-  return !sheetConfigurado();
+  return !sheetConfigurado() && process.env.NODE_ENV !== "production";
 }
 
 const texto = (c: Celda | undefined) => (c === undefined ? "" : String(c).trim());
