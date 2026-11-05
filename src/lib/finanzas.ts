@@ -11,10 +11,15 @@ export function esRegistrador(v: unknown): v is Registrador {
   return REGISTRADORES.some((r) => r === v);
 }
 
+/** De dónde viene un ingreso: `Cupo` lo escribe el botón de pagó cupo, `Abono` el formulario del admin. */
+export const ORIGENES = ["Cupo", "Abono"] as const;
+export type Origen = (typeof ORIGENES)[number];
+
 export type Ingreso = {
   fecha: string; // YYYY-MM-DD, hora de Colombia
   persona: string;
   monto: number; // pesos colombianos
+  origen: Origen;
 };
 
 export type Gasto = {

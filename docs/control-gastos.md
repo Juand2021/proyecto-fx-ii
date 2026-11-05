@@ -14,11 +14,19 @@ Los ingresos y gastos del paseo viven en un Google Sheet. Los dos admins los reg
 | `/evidencia/[id]` | público | Sirve la foto; es el link que queda en la columna Evidencia |
 | `/admin` | solo con PIN | Formularios de ingreso y gasto |
 
-El botón manual DEBE / pagó cupo no cambia y es independiente de los abonos del Sheet.
+## El botón DEBE y el Sheet
+
+El botón manual DEBE sigue igual, pero ahora se refleja en el Sheet:
+
+- **De DEBE a pagado:** la app agrega una fila de $50.000 en `Ingresos` a nombre de esa persona, con Origen `Cupo`. Si ya tenía esa fila, no la repite.
+- **De pagado a DEBE:** la app borra la fila de esa persona con Origen `Cupo`. Nunca borra abonos: ni los del formulario (Origen `Abono`), ni filas escritas a mano o sin Origen, ni filas de otras personas.
+- Los abonos adicionales (por ejemplo los $200.000 restantes) se siguen registrando con el formulario de ingreso del admin.
+- Si no se puede escribir en el Sheet, el botón no cambia y sale un aviso rojo; se puede volver a pulsar sin riesgo de duplicar.
+- El recuadro "plata en el bolsillo de Perdomo" de `/cuentas` muestra el total de ingresos del Sheet, el mismo "Total recaudado" del Resumen.
 
 ## Columnas del Sheet
 
-- **Ingresos:** Fecha, Persona, Monto COP. Una persona puede tener varias filas (abonos).
+- **Ingresos:** Fecha, Persona, Monto COP, Origen (`Cupo` si lo escribió el botón de pagó cupo, `Abono` si lo escribió el formulario). Una persona puede tener varias filas.
 - **Gastos:** Fecha, Motivo, Monto COP, Evidencia (link a la foto), Registrado por (Juan Diego o Albert).
 - **Resumen:** todo con fórmulas, no se escribe a mano. Meta por persona (celda B3, $250.000), total recaudado, total gastado, saldo disponible (recaudado − gastado) y, por persona, abonado, falta y estado.
 
@@ -55,4 +63,5 @@ La foto se achica en el navegador (lado máximo 1280 px, JPEG) y queda en Firest
 
 - **"No se pudo escribir en el Sheet":** revisar que esté compartido como Editor con la cuenta de servicio y que `GOOGLE_SHEET_ID` sea correcto.
 - **Aviso de modo prueba en `/admin`:** falta `GOOGLE_SHEET_ID` o `FIREBASE_SERVICE_ACCOUNT`; los movimientos no se guardan.
+- **Alguien marcado como pagó pero sin fila de cupo en el Sheet** (por ejemplo, porque se marcó antes de existir esta función): pasarlo a DEBE y de nuevo a pagado agrega su fila.
 - **Una fila mal escrita a mano en el Sheet** (sin monto, o con un "Registrado por" distinto de los dos nombres) se ignora en la web.

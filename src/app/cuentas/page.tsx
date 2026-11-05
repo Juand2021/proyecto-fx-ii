@@ -60,7 +60,6 @@ export default async function Cuentas() {
   const noVan = personas.length - van;
   const deben = personas.filter(debe).length;
   const pagaron = personas.length - deben;
-  const recogido = pagaron * VIAJE.cupo;
 
   let cuentas: CuentasDatos | null = null;
   let errorCuentas = false;
@@ -124,7 +123,10 @@ export default async function Cuentas() {
         </div>
 
         <Caja tag="PLATA EN EL BOLSILLO DE PERDOMO" delay={140}>
-          <p className="font-display text-5xl tabular-nums text-[#0f8a3c]">{formatoPesos(recogido)}</p>
+          {/* Sale del Sheet (cupos + abonos), el mismo total del Resumen del Excel. */}
+          <p className="font-display text-5xl tabular-nums text-[#0f8a3c]">
+            {cuentas ? formatoPesos(cuentas.totalIngresos) : "—"}
+          </p>
           <p className="mt-1 text-sm font-bold">
             {pagaron} de {personas.length} han soltado los {formatoPesos(VIAJE.cupo)} del cupo.
           </p>

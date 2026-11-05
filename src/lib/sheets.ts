@@ -40,6 +40,25 @@ export async function leerFilas(rango: string): Promise<Celda[][]> {
   return res.data.values ?? [];
 }
 
+/**
+ * Borra filas enteras de una pestaña. `filas` son índices desde 0 contando el encabezado
+ * (la primera fila de datos es la 1); el encabezado (0) nunca se borra.
+ * Se borra de abajo hacia arriba para que los índices no se corran entre sí.
+ */
+export async function borrarFilas(pestana: string, filas: number[]): Promise<void> {
+  if (filas.some((f) => !Number.isInteger(f) || f < 1)) throw new Error("Índice de fila inválido");
+  if (filas.length === 0) return;
+  const meta = await getCliente().request<{ sheets: { properties: { title: string; sheetId: number } }[] }>({
+    url: `${API}/${idHoja()}?fields=sheets.properties(title,sheetId)`,
+  });
+  const sheetId = meta.data.sheets.find((s) => s.properties.title === pestana)?.properties.sheetId;
+  if (sheetId === undefined) throw new Error(`No existe la pestaña ${pestana}`);
+  const requests = [...new Set(filas)]
+    .sort((a, b) => b - a)
+    .map((i) => ({ deleteDimension: { range: { sheetId, dimension: "ROWS", startIndex: i, endIndex: i + 1 } } }));
+  await getCliente().request({ url: `${API}/${idHoja()}:batchUpdate`, method: "POST", data: { requests } });
+}
+
 /** Agrega una fila al final de la tabla de esa pestaña (por ejemplo "Gastos!A:E"). */
 export async function agregarFila(rango: string, fila: Celda[]): Promise<void> {
   const url = `${API}/${idHoja()}/values/${encodeURIComponent(rango)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;

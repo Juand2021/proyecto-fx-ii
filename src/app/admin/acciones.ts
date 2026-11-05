@@ -7,7 +7,7 @@ import { COOKIE_ADMIN, esAdmin, pinCorrecto, tokenAdmin } from "@/lib/admin-auth
 import { guardarEvidencia, urlEvidencia } from "@/lib/evidencia";
 import { camposDe, esAccion } from "@/lib/estado";
 import { esRegistrador, parsearPesos } from "@/lib/finanzas";
-import { registrarGasto, registrarIngreso } from "@/lib/movimientos";
+import { asegurarCupo, quitarCupo, registrarGasto, registrarIngreso } from "@/lib/movimientos";
 import { actualizarPersona, crearPersona, eliminarPersona, listarPersonas } from "@/lib/personas";
 
 const MONTO_MAXIMO = 100_000_000;
@@ -50,6 +50,18 @@ export async function marcar(formData: FormData) {
   const id = String(formData.get("id"));
   const accion = formData.get("accion");
   if (!esAccion(accion)) return;
+  // Pagar el cupo = $50.000 de ingreso en el Sheet; volver a DEBE borra esa fila. El Sheet va primero:
+  // si falla, el botón no cambia y se puede volver a pulsar sin duplicar nada.
+  if (accion === "pagado" || accion === "debe") {
+    const persona = (await listarPersonas()).find((p) => p.id === id);
+    if (persona) {
+      const sincronizado = await (accion === "pagado" ? asegurarCupo(persona.nombre) : quitarCupo(persona.nombre)).then(
+        () => true,
+        () => false,
+      );
+      if (!sincronizado) redirect("/admin?error=sheet");
+    }
+  }
   await actualizarPersona(id, camposDe(accion));
   refrescar();
 }

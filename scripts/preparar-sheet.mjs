@@ -11,6 +11,7 @@ const API = "https://sheets.googleapis.com/v4/spreadsheets";
 const FILAS = 1000;
 const META = 250_000; // costo total por persona; la web usa VIAJE.costoTotal de src/lib/viaje.ts
 const REGISTRADORES = ["Juan Diego", "Albert"]; // igual que REGISTRADORES de src/lib/finanzas.ts
+const ORIGENES = ["Cupo", "Abono"]; // igual que ORIGENES de src/lib/finanzas.ts
 const PESOS = { type: "NUMBER", pattern: "$#,##0" };
 const VERDE = { red: 0.059, green: 0.541, blue: 0.235 };
 const BLANCO = { red: 1, green: 1, blue: 1 };
@@ -104,11 +105,22 @@ async function darFormato({ ids, nuevas }) {
     propiedades(ingresos, { index: 1, gridProperties: { frozenRowCount: 1 } }, "index,gridProperties.frozenRowCount"),
     propiedades(gastos, { index: 2, gridProperties: { frozenRowCount: 1 } }, "index,gridProperties.frozenRowCount"),
 
-    encabezado(ingresos, 3),
+    encabezado(ingresos, 4),
     formatoPesos(ingresos, 1, 2, 3),
     ancho(ingresos, 0, 110),
     ancho(ingresos, 1, 220),
     ancho(ingresos, 2, 130),
+    ancho(ingresos, 3, 100),
+    {
+      setDataValidation: {
+        range: rango(ingresos, 1, FILAS, 3, 4),
+        rule: {
+          condition: { type: "ONE_OF_LIST", values: ORIGENES.map((userEnteredValue) => ({ userEnteredValue })) },
+          showCustomUi: true,
+          strict: true,
+        },
+      },
+    },
 
     encabezado(gastos, 5),
     formatoPesos(gastos, 1, 2, 3),
@@ -151,7 +163,7 @@ async function darFormato({ ids, nuevas }) {
     ancho(resumen, 3, 120),
   ];
   // Las protecciones se agregan solo al crear la pestaña, para no duplicarlas al repetir el script.
-  if (nuevas.has("Ingresos")) requests.push(proteger(ingresos, 3));
+  if (nuevas.has("Ingresos")) requests.push(proteger(ingresos, 4));
   if (nuevas.has("Gastos")) requests.push(proteger(gastos, 5));
   await lote(requests);
 }
@@ -159,7 +171,7 @@ async function darFormato({ ids, nuevas }) {
 // 3) Encabezados y fórmulas. El Resumen se calcula solo a partir de las otras dos pestañas.
 async function escribirContenido() {
   const data = [
-    { range: "Ingresos!A1:C1", values: [["Fecha", "Persona", "Monto COP"]] },
+    { range: "Ingresos!A1:D1", values: [["Fecha", "Persona", "Monto COP", "Origen"]] },
     { range: "Gastos!A1:E1", values: [["Fecha", "Motivo", "Monto COP", "Evidencia", "Registrado por"]] },
     {
       range: "Resumen!A1:B6",
